@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ridak Store</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#f5f5f5}
+header{background:#111;color:#fff;padding:15px;font-size:22px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:20px}
+.card{background:#fff;padding:15px;border-radius:10px;box-shadow:0 0 10px #ccc;text-align:center}
+.card img{width:100%;height:200px;object-fit:cover;border-radius:10px}
+button{background:#111;color:#fff;border:none;padding:10px 15px;border-radius:5px;cursor:pointer}
+.cartBtn{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:15px;border-radius:50px}
+#cartModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0009}
+#cartBox{background:#fff;width:300px;padding:20px;margin:100px auto;border-radius:10px}
+</style>
+</head>
+
+<body>
+
+<header>Ridak Online Store</header>
+
+<div class="grid" id="products"></div>
+
+<div class="cartBtn" onclick="openCart()">🛒 <span id="count">0</span></div>
+
+<div id="cartModal">
+  <div id="cartBox">
+    <h3>Your Cart</h3>
+    <div id="cartItems"></div>
+    <h4>Total: ₹<span id="total">0</span></h4>
+    <button onclick="payNow()">Pay Now</button>
+    <button onclick="closeCart()">Close</button>
+  </div>
+</div>
+
+<script>
+let products = [
+ {id:1,name:"Butterfly Necklace",price:999,img:"https://i.imgur.com/Wb1qfhK.jpg"},
+ {id:2,name:"Stylish Sneakers",price:1999,img:"https://i.imgur.com/8z5JZbA.jpg"},
+ {id:3,name:"Cosmetic Kit",price:1499,img:"https://i.imgur.com/rn1Vh6s.jpg"}
+];
+
+let cart = [];
+
+function loadProducts(){
+ let p = document.getElementById("products");
+ products.forEach(x=>{
+  p.innerHTML += `
+   <div class="card">
+    <img src="${x.img}">
+    <h3>${x.name}</h3>
+    <p>₹${x.price}</p>
+    <button onclick="add(${x.id})">Add to Cart</button>
+   </div>`;
+ })
+}
+loadProducts();
+
+function add(id){
+ let item = products.find(p=>p.id==id);
+ cart.push(item);
+ document.getElementById("count").innerText = cart.length;
+}
+
+function openCart(){
+ document.getElementById("cartModal").style.display="block";
+ let list="";
+ let total=0;
+ cart.forEach(p=>{
+  list+=`<p>${p.name} - ₹${p.price}</p>`;
+  total+=p.price;
+ });
+ document.getElementById("cartItems").innerHTML=list;
+ document.getElementById("total").innerText=total;
+}
+
+function closeCart(){document.getElementById("cartModal").style.display="none";}
+
+function payNow(){
+ let total = cart.reduce((s,p)=>s+p.price,0);
+ var options = {
+    "key": "YOUR_RAZORPAY_KEY",
+    "amount": total*100,
+    "currency": "INR",
+    "name": "Ridak Store",
+    "description": "Order Payment",
+    "handler": function (response){
+        alert("Payment Successful");
+        cart=[];
+        document.getElementById("count").innerText=0;
+        closeCart();
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.open();
+}
+</script>
+
+</body>
+</html>
